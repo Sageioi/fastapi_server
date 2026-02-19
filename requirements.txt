@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+sqlalchemy
+aiosqlite
+python-multipart
+fastapi_users
+fastapi_users_db_sqlalchemy
+python-dotenv
+cloudinary
+requests
