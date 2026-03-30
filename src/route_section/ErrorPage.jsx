@@ -1,18 +1,20 @@
 import {Link} from "react-router-dom"
+import { useMediaQuery } from "react-responsive";
 
 const ErrorPage = () => {
+    const isMobile = useMediaQuery({ maxWidth: 320 });
     return (
-        <div className="bg-purple-400 flex justify-center items-center h-screen text-4xl">
-        <ul className="outline-none flex flex-col items-center space-y-6">
+        <div className={`bg-purple-400 flex justify-center items-center h-screen ${isMobile ? "text-2xl":"text-4xl"}`}>
+        <ul className={`outline-none ${isMobile ? 'flex-1':'flex flex-col'}  justify-center items-center space-y-6`}>
             <li className="text-white font-extrabold">
             <span>Hi, User</span>
             </li>
-            <li className="text-white font-extrabold">
-                You are doing a wrong task being here but you could always 
+            <li className="text-white  font-extrabold">
+                You are doing a wrong task being here
             </li>
-            <li className="bg-white p-3 w-56 flex flex-col items-center rounded-4xl">
+            <li className={`p-3 flex ${isMobile ? "w-40" : "flex-col w-56 "} items-center rounded-4xl`}>
                 <Link to = {{pathname : "/"}}>
-                <button className="text-purple-400 font-extrabold">Go Back</button>
+                <button className="text-white font-extrabold border-3 border-white p-2 rounded-lg">Go Back</button>
                 </Link>
             </li>
             </ul>

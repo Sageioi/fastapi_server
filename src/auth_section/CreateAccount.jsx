@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useMediaQuery } from "react-responsive";
-import axios from "axios"
+import api from "../route_section/api";
+import { useNavigate } from "react-router-dom";
 
 const InputField = ({ label, value, onChange, isMobile }) =>{
 return (
@@ -17,7 +18,7 @@ return (
 const Button = ({handleLogin}) => {
  
   return (
-   <button className = {"bg-purple-400 font-medium text-white p-1 rounded-md"} onClick={() => handleLogin()}
+   <button className = {"bg-white font-medium border-2 border-purple-400 text-purple-400 p-1 rounded-md"} onClick={() => handleLogin()}
  >Submit</button>
   )
 }
@@ -30,39 +31,31 @@ const CreateAccount = () => {
   const [debouncedEmail, setDebouncedEmail] = useState('');
   const [debouncedPass, setDebouncedPass] = useState('');
   const [loading, setLoading] = useState(false);
-  const [user_token, setToken] = useState("")
-
-
-  console.log("Email:", debouncedEmail, "Password:", debouncedPass);
+  const navigate = useNavigate()
 
    
 const handleLogin = async () => {
     setLoading(true);
     
-    const bodyData = new URLSearchParams();
+    const bodyData = new FormData();
     bodyData.append("email", debouncedEmail);
     bodyData.append("password", debouncedPass);
+    bodyData.append("is_active", true);
+    bodyData.append("is_superuser", false);
+    bodyData.append("is_verified", false);
 
     try {
-      console.log("email:", bodyData.get("email"));
-      console.log("password:", bodyData.get("password"));
-      const response = await axios({url:`http://127.0.0.1:8000/auth/register`,
+      const response = await api({url:`/auth/register`,
         method:"post",
-        headers : {"Content-Type":"application/x-www-form-urlencoded"},
+        headers : {"Content-Type":"application/json"},
         data: bodyData,
         timeout: 7000,
-        withCredentials: true
       })
-      if (response.ok) {
-        const data = await response.json();
-        sessionStorage.setItem("access_token",data.access_token)
-        setToken(data.access_token)
-        console.log(user_token)
-        alert("Account created successfully.")
-      }
-      else
-       {
-         alert("Something is wrong with the server")
+      if (response.status == 201 ) {
+        alert("Your account has been created.")
+        navigate("/login")
+      } else {
+        alert("Something went wrong with the server, try again later.");
       }
     } catch (error) {
       console.error("Check your Internet Connection or this error message:", error.message);

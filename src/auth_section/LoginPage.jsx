@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useMediaQuery } from "react-responsive";
 import {Link} from "react-router-dom"
-import axios from "axios"
+import api from "../route_section/api";
+import {useNavigate} from "react-router-dom"
+
 
 
 const InputField = ({ label, value, onChange, isMobile }) =>{
@@ -19,10 +21,11 @@ return (
 const Button = ({handleLogin}) => {
  
   return (
-   <button className = {"bg-purple-400 font-medium text-white p-1 rounded-md"} onClick={() => handleLogin()}
+   <button className = {"bg-white font-medium border-2 border-purple text-purple-400 p-1 rounded-md"} onClick={() => handleLogin()}
  >Submit</button>
   )
 }
+
 
 const Login =  () => {
   const isMobile = useMediaQuery({ maxWidth: 320 });
@@ -31,8 +34,10 @@ const Login =  () => {
   const [debouncedEmail, setDebouncedEmail] = useState('');
   const [debouncedPass, setDebouncedPass] = useState('');
   const [loading, setLoading] = useState(false);
+  const [userStatus , setUserStatus] = useState('')
+  const navigate = useNavigate()
 
-  console.log("Email:", debouncedEmail, "Password:", debouncedPass);
+
 
    
 const handleLogin = async () => {
@@ -43,7 +48,7 @@ const handleLogin = async () => {
     bodyData.append("password", debouncedPass);
 
     try {
-      const response = await axios({url:`http://127.0.0.1:8000/auth/jwt/login`,
+      const response = await api({url:`/auth/jwt/login`,
         method:"post",
         headers : {"Content-Type":"application/x-www-form-urlencoded"},
         data: bodyData,
@@ -54,6 +59,7 @@ const handleLogin = async () => {
       if (response.status == 204 ) {
         console.log(response)
         alert("You have been logged in.")
+        navigate("/main_page")
       } else {
         alert("Invalid credentials");
       }
@@ -79,7 +85,7 @@ const handleLogin = async () => {
  )
   return (
     <div className="bg-purple-400 h-screen w-screen flex justify-center items-center">
-      <div className={`bg-white rounded-md shadow-2xl  p-6 ${isMobile ? "w-64 h-70" : "w-96 h-70 "}`}>
+      <div className={`bg-white rounded-md shadow-2xl  p-6 ${isMobile ? "w-64 h-80" : "w-96 h-70 "}`}>
         <div className="flex justify-center items-center font-medium"><span className="top  text-purple-400">Login to your account</span></div>
         <ul className="space-y-4 font-medium m-3">
           <InputField 
@@ -95,16 +101,17 @@ const handleLogin = async () => {
             isMobile={isMobile} 
           />
         </ul>
-        <div className="flex flex-col justify-center items-center p-5 space-y-4">
+        <div className={`flex flex-col justify-center items-center ${isMobile ? 'p-1':'p-3'} space-y-4`}>
           <Button handleLogin={handleLogin} />
           <Link to = "/create_account">
-          <button className="bg-purple-400 text-white p-1 rounded-md flex font-medium">Create Account</button>
+          <button className="bg-white border-2 border-purple-400 text-purple-400 p-1 rounded-md flex font-medium">Create Account</button>
           </Link>
         </div>
       </div>
     </div>
+    
   );
-  
+
 };
 
 
