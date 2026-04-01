@@ -1,10 +1,21 @@
+## For Api development
 fastapi
 uvicorn
-sqlalchemy
-aiosqlite
 python-multipart
 fastapi_users
 fastapi_users_db_sqlalchemy
+ujson
+
+## for Database integration
+sqlalchemy
+aiosqlite
+
+## Api integration
 python-dotenv
 cloudinary
-requests
+
+
+## Email messaging and handling
+getpass4
+timesched
+mailchimp_transactional

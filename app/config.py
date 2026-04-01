@@ -8,3 +8,4 @@ import json
 
 
 config = cloudinary.config(secure=True)
+YOUR_API_KEY = "md-uDCrIPhuJGqL_w3sWt1kCQ"

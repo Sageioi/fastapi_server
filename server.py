@@ -7,7 +7,7 @@ def run_server(status = True):
     else:
        print ("Server has not been started")
    except Exception as e:
-       raise f"Error Occured:  {e}"
+       print(f"Error occured : {e}")
 
 if "__main__" == __name__:
-    run_server()
+    run_server(status=True)

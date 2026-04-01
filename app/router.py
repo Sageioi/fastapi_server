@@ -1,7 +1,6 @@
 import os
 import shutil
 import tempfile
-import uuid
 from datetime import datetime, date
 
 
@@ -9,17 +8,16 @@ import app.config
 from cloudinary import uploader
 from fastapi import APIRouter, Depends, Form, UploadFile , File, HTTPException
 from sqlalchemy import select
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, UJSONResponse
 
 from app.models import Task, User
 
-from app.models import Task
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import get_async_session
 from app.users import current_active_user
 
 routes = APIRouter()
-
+IMAGE_FORMAT = ["image/jpeg","image/jpg","image/svg"]
 UPLOAD_DIR = "user_images_uploads"
 @routes.post("/create_task")
 async def create_task(user: User = Depends(current_active_user),task_name : str = Form(...),task_description : str = Form(...),session: AsyncSession = Depends(get_async_session)):
@@ -34,37 +32,36 @@ async def create_task(user: User = Depends(current_active_user),task_name : str 
         session.add(task)
         await session.commit()
         await session.refresh(task)
-        return "Task Successfully Created."
+        message = {"message":"Task Successfully Created."}
+        return UJSONResponse(message)
     except Exception as e :
         raise HTTPException(status_code=400, detail=f"Task Creation Failed:{e}")
 
 
 
-@routes.get("/get_tasks")
-async def get_tasks(user: User = Depends(current_active_user),session: AsyncSession = Depends(get_async_session)):
-    result = await session.execute(select(Task).order_by(Task.time_created.desc()))
+@routes.post("/get_tasks")
+async def get_tasks(task_name: str = Form(...),user: User = Depends(current_active_user),session: AsyncSession = Depends(get_async_session)):
+    result = await session.execute(select(Task).where((Task.task_name == task_name)).order_by(Task.time_created.desc()))
     task_result = (result.scalars().all())
-    the_user = await session.execute(select(User))
-    the_user = the_user.scalars().one_or_none()
-    task_list = []
+    task_list = {}
     for task in task_result:
-        if task.user_id == the_user.id:
-            task_list.append({task})
+        if task.user_id == user.id:
+            task_list.update({task.task_name:[task.task_description,task.date_created,task.time_created]})
     return task_list
 
 
 @routes.post("/post_profile_photo")
 async def post_profile_photo(user_image : UploadFile = File(...),session: AsyncSession = Depends(get_async_session),active_user : User = Depends(current_active_user)):
     try:
-        with tempfile.NamedTemporaryFile(delete=False) as tmp:
-            shutil.copyfileobj(user_image.file, tmp)
-        uploader.upload(tmp.name,
-                                   asset_folder=UPLOAD_DIR,
-                                   public_id= str(active_user.id),
-                                   overwrite=True,
-                                   notification_url="https://images/notify_endpoint",
-                                   resource_type="image")
-        return "Image Uploaded Successfully"
+        for format in IMAGE_FORMAT:
+            if user_image.content_type == format :
+                with tempfile.NamedTemporaryFile(delete=False) as tmp:
+                    shutil.copyfileobj(user_image.file, tmp)
+                uploader.upload(tmp.name,asset_folder=UPLOAD_DIR,public_id= str(active_user.id),overwrite=True,notification_url="https://images/notify_endpoint",resource_type="image")
+                message = {"message":"Image Uploaded Successfully"}
+                return UJSONResponse(message)
+            else:
+                return UJSONResponse({"message":"This file format is not supported"})
     except Exception as e :
         raise HTTPException(status_code=400, detail=f"Image Upload Failed:{e}")
     finally:
@@ -77,19 +74,25 @@ async def update_profile_photo(user_image : UploadFile = File(...),session: Asyn
     try:
         active_user = await session.execute(select(User).where(User.id == active_user.id))
         active_user = active_user.scalars().one_or_none()
-        with tempfile.NamedTemporaryFile(delete=False) as tmp:
-            shutil.copyfileobj(user_image.file, tmp)
-        uploader.upload(tmp.name,
-                                   asset_folder=UPLOAD_DIR,
-                                   public_id= str(active_user.id),
-                                   overwrite=True,
-                                   notification_url="https://images/notify_endpoint",
-                                   resource_type="image")
-        return "Image Uploaded Successfully"
+        for format in IMAGE_FORMAT:
+            if user_image.content_type == format :
+                with tempfile.NamedTemporaryFile(delete=False) as tmp:
+                    shutil.copyfileobj(user_image.file, tmp)
+                uploader.upload(tmp.name,
+                                           asset_folder=UPLOAD_DIR,
+                                           public_id= str(active_user.id),
+                                           overwrite=True,
+                                           notification_url="https://images/notify_endpoint",
+                                           resource_type="image")
+                message = {"message":"Image Updated Successfully"}
+                return UJSONResponse(message)
+            else:
+                return UJSONResponse({"message":"This file format is not supported"})
+
     except Exception as e :
         raise HTTPException(status_code=400, detail=f"Image Upload Failed:{e}")
     finally:
-        os.remove(tmp.name)
+        os.unlink(tmp.name)
 
 @routes.get("/get_photo")
 async def get_photo(active_user : User = Depends(current_active_user),session: AsyncSession = Depends(get_async_session)):
@@ -103,8 +106,6 @@ async def get_photo(active_user : User = Depends(current_active_user),session: A
         raise HTTPException(status_code=400, detail=f"Image Retrieval Failed:{e}")
 
 
-
-
 @routes.delete("/delete_task")
 async def delete_task(session: AsyncSession = Depends(get_async_session), task_name : str = Form(...), active_user : User = Depends(current_active_user)):
     result = await session.execute(select(Task).where(Task.task_name == task_name))
@@ -114,7 +115,8 @@ async def delete_task(session: AsyncSession = Depends(get_async_session), task_n
             if task_result.user_id == active_user.id:
                 await session.delete(task_result)
                 await session.commit()
-                return "Task Deleted Successfully"
+                message = {"message":"Task Deleted Successfully"}
+                return UJSONResponse(message)
         else:
             raise HTTPException(status_code=404, detail="Task not found")
 
