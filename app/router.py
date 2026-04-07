@@ -6,7 +6,7 @@ from datetime import datetime, date
 
 import app.config
 from cloudinary import uploader
-from fastapi import APIRouter, Depends, Form, UploadFile , File, HTTPException
+from fastapi import APIRouter, Depends, Form, UploadFile , File, HTTPException, Body
 from sqlalchemy import select
 from fastapi.responses import RedirectResponse, UJSONResponse
 
@@ -114,9 +114,9 @@ async def get_photo(active_user : User = Depends(current_active_user),session: A
 
 
 @routes.delete("/delete_task")
-async def delete_task(task_name : str , session: AsyncSession = Depends(get_async_session), active_user : User = Depends(current_active_user)):
+async def delete_task(task_name : str = Body() , session: AsyncSession = Depends(get_async_session), active_user : User = Depends(current_active_user)):
     result = await session.execute(select(Task).where(Task.task_name == task_name))
-    task_result = (result.scalars().one_or_none())
+    task_result = (result.scalars().first())
     try:
         if task_result:
             if task_result.user_id == active_user.id:
