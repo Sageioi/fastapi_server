@@ -39,15 +39,22 @@ async def create_task(user: User = Depends(current_active_user),task_name : str 
 
 
 
-@routes.post("/get_tasks")
-async def get_tasks(task_name: str = Form(...),user: User = Depends(current_active_user),session: AsyncSession = Depends(get_async_session)):
-    result = await session.execute(select(Task).where((Task.task_name == task_name)).order_by(Task.time_created.desc()))
+@routes.get("/get_tasks")
+async def get_tasks(user: User = Depends(current_active_user),session: AsyncSession = Depends(get_async_session)):
+    result = await session.execute(select(Task).where((Task.user_id == user.id)).order_by(Task.time_created.desc()))
     task_result = (result.scalars().all())
-    task_list = {}
+    task_list = []
+    n = 0
     for task in task_result:
-        if task.user_id == user.id:
-            task_list.update({task.task_name:[task.task_description,task.date_created,task.time_created]})
-    return task_list
+            task_list.append({
+                "id": n,
+                "task_name": task.task_name,
+                "task_description": task.task_description,
+                "date_created": task.date_created.isoformat(),
+                "time_created": task.time_created.isoformat()
+            })
+    n += 1
+    return UJSONResponse({"tasks":task_list})
 
 
 @routes.post("/post_profile_photo")
@@ -107,7 +114,7 @@ async def get_photo(active_user : User = Depends(current_active_user),session: A
 
 
 @routes.delete("/delete_task")
-async def delete_task(session: AsyncSession = Depends(get_async_session), task_name : str = Form(...), active_user : User = Depends(current_active_user)):
+async def delete_task(task_name : str , session: AsyncSession = Depends(get_async_session), active_user : User = Depends(current_active_user)):
     result = await session.execute(select(Task).where(Task.task_name == task_name))
     task_result = (result.scalars().one_or_none())
     try:
