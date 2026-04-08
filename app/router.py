@@ -74,33 +74,6 @@ async def post_profile_photo(user_image : UploadFile = File(...),session: AsyncS
     finally:
         os.remove(tmp.name)
 
-
-@routes.patch("/update_profile_photo")
-async def update_profile_photo(user_image : UploadFile = File(...),session: AsyncSession = Depends(get_async_session), active_user : User = Depends(current_active_user)):
-
-    try:
-        active_user = await session.execute(select(User).where(User.id == active_user.id))
-        active_user = active_user.scalars().one_or_none()
-        for format in IMAGE_FORMAT:
-            if user_image.content_type == format :
-                with tempfile.NamedTemporaryFile(delete=False) as tmp:
-                    shutil.copyfileobj(user_image.file, tmp)
-                uploader.upload(tmp.name,
-                                           asset_folder=UPLOAD_DIR,
-                                           public_id= str(active_user.id),
-                                           overwrite=True,
-                                           notification_url="https://images/notify_endpoint",
-                                           resource_type="image")
-                message = {"message":"Image Updated Successfully"}
-                return UJSONResponse(message)
-            else:
-                return UJSONResponse({"message":"This file format is not supported"})
-
-    except Exception as e :
-        raise HTTPException(status_code=400, detail=f"Image Upload Failed:{e}")
-    finally:
-        os.unlink(tmp.name)
-
 @routes.get("/get_photo")
 async def get_photo(active_user : User = Depends(current_active_user),session: AsyncSession = Depends(get_async_session)):
     try:
