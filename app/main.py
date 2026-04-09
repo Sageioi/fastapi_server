@@ -1,18 +1,22 @@
+from dotenv import load_dotenv
+load_dotenv()
 from fastapi import FastAPI
 from app.router import routes
 from contextlib import asynccontextmanager
 from app.models import create_db_tables
+import os
 from app.schemas import UserCreate, UserRead, UserUpdate
 from app.users import fastapi_users, auth_backend
 from fastapi.middleware.cors import CORSMiddleware
 
+FRONTEND_URL = os.getenv("NETLIFY_APP")
 @asynccontextmanager
 async def lifespan(app : FastAPI):
     await create_db_tables()
     yield
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(CORSMiddleware,
-                   allow_origins = ["http://localhost:5173","http://127.0.0.1:5173"],
+                   allow_origins = [FRONTEND_URL],
                    allow_credentials = True,
                    allow_methods = ["*"],
                    allow_headers = ["*"])
