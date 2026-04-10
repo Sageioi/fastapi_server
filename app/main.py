@@ -9,7 +9,7 @@ from app.schemas import UserCreate, UserRead, UserUpdate
 from app.users import fastapi_users, auth_backend
 from fastapi.middleware.cors import CORSMiddleware
 
-FRONTEND_URL : str = "https://my-mom-tan.vercel.app/"
+FRONTEND_URL : str = "https://my-mom-tan.vercel.app"
 @asynccontextmanager
 async def lifespan(app : FastAPI):
     await create_db_tables()
