@@ -9,14 +9,14 @@ from app.schemas import UserCreate, UserRead, UserUpdate
 from app.users import fastapi_users, auth_backend
 from fastapi.middleware.cors import CORSMiddleware
 
-FRONTEND_URL : str = "https://my-mom-tan.vercel.app"
+FRONTEND_URL : list = ["https://my-mom-tan.vercel.app","https://my-mom-git-main-sageiois-projects.vercel.app"]
 @asynccontextmanager
 async def lifespan(app : FastAPI):
     await create_db_tables()
     yield
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(CORSMiddleware,
-                   allow_origins = [FRONTEND_URL],
+                   allow_origins = FRONTEND_URL,
                    allow_credentials = True,
                    allow_methods = ["*"],
                    allow_headers = ["*"])
