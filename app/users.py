@@ -11,10 +11,10 @@ from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 
 from app.models import get_user_db, User
 
-SECRET = os.getenv("APP_SECRET_KEY ")
+SECRET = os.getenv("APP_SECRET_KEY")
 
 if SECRET is None:
-    raise ValueError("JWT_SECRET environment variable is not set!")
+    raise ValueError("APP_SECRET_KEY environment variable is not set!")
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_lifetime_seconds = 120
 
@@ -41,7 +41,6 @@ async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db
 
 
 def get_jwt_strategy():
-    secret = os.getenv("APP_SECRET_KEY")
     print(f"SECRET_KEY in strategy: {SECRET}")
     return JWTStrategy(secret=SECRET, lifetime_seconds=3600)
 
