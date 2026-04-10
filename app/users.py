@@ -1,3 +1,9 @@
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
 import uuid
 from typing import Optional
 from fastapi import Depends, Request
@@ -7,10 +13,6 @@ from fastapi_users.authentication import BearerTransport, AuthenticationBackend,
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase, SQLAlchemyBaseUserTableUUID
 
 from app.models import get_user_db, User
-
-from dotenv import load_dotenv
-
-load_dotenv()
 
 SECRET_KEY = os.getenv("APP_SECRET_KEY")
 
