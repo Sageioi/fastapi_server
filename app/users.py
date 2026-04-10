@@ -18,8 +18,13 @@ SECRET_KEY = os.getenv("APP_SECRET_KEY")
 print(f"SECRET_KEY loaded: {SECRET_KEY}")
 
 class UserManager(UUIDIDMixin,BaseUserManager[User,uuid.UUID]):
-    reset_password_token_secret = SECRET_KEY
-    verification_token_secret = SECRET_KEY
+      @property
+    def reset_password_token_secret(self):
+        return os.getenv("APP_SECRET_KEY")
+
+    @property
+    def verification_token_secret(self):
+        return os.getenv("APP_SECRET_KEY")
     reset_password_token_lifetime_seconds = 120
 
 
@@ -34,6 +39,8 @@ async def get_user_manager(user_db : SQLAlchemyUserDatabase = Depends(get_user_d
     yield UserManager(user_db)
 
 def get_jwt_strategy():
+    secret = os.getenv("APP_SECRET_KEY")  # read fresh every time
+    print(f"SECRET_KEY in strategy: {secret}")
     return JWTStrategy(
         secret = SECRET_KEY,
         lifetime_seconds=3600,
