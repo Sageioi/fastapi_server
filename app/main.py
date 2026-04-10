@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(override=False)
 from fastapi import FastAPI
 from app.router import routes
 from contextlib import asynccontextmanager
