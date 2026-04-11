@@ -16,6 +16,4 @@ cloudinary
 
 
 ## Email messaging and handling
-getpass4
-timesched
-mailchimp_transactional
+resend

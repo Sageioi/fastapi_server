@@ -10,7 +10,7 @@ from fastapi_users.authentication import BearerTransport, AuthenticationBackend,
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 
 from app.models import get_user_db, User
-
+from app.mail_service import send_verification_email
 SECRET = os.getenv("APP_SECRET_KEY")
 
 if SECRET is None:
@@ -28,12 +28,14 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
         print(f"User {user.email} is registered.")
+        
 
     async def on_after_forgot_password(self, user: User, token: str, request: Optional[Request] = None):
-        print(f"User {user.email} forgot their password. Reset token: {token}")
+        send_verification_email(user.email, token,name="verification", purpose="password reset")
 
     async def on_after_verify(self, user: User, request: Optional[Request] = None, token: str = None):
         print(f"User {user.email} verified. Verification token: {token}")
+        send_verification_email(user.email, token, "verification", "verification")
 
 
 async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db)):

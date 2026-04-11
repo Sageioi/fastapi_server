@@ -5,7 +5,6 @@ from app.router import routes
 from contextlib import asynccontextmanager
 from app.models import create_db_tables
 import os
-print("ALL ENV VARS:", {k: v for k, v in os.environ.items() if "SECRET" in k or "APP" in k})
 from app.schemas import UserCreate, UserRead, UserUpdate
 from app.users import fastapi_users, auth_backend
 from fastapi.middleware.cors import CORSMiddleware
