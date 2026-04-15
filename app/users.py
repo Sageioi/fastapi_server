@@ -10,7 +10,6 @@ from fastapi_users.authentication import BearerTransport, AuthenticationBackend,
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 
 from app.models import get_user_db, User
-from app.mail_service import send_verification_email
 SECRET = os.getenv("APP_SECRET_KEY")
 
 if SECRET is None:
